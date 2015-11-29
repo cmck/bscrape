@@ -9,7 +9,7 @@ phantom.casperTest = true
 //     }
 // });
 
-var config = require('./config-clark.js');
+var config = require('./config.js');
 var fs = require('fs');
 var x = require('casper').selectXPath;
 var casper = require('casper').create();
