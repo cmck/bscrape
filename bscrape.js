@@ -22,7 +22,7 @@ var data = {};
 
 // Casper config
 casper.userAgent(desktopUA)
-casper.options.waitTimeout = 10000;
+casper.options.waitTimeout = 20000;
 
 // Start
 casper.start('http://www.google.com')
@@ -40,7 +40,7 @@ casper.start('http://www.google.com')
 // 2. Betway
 /////////////////
 
-if (config.betway.username) {
+if (config.betway.enabled) {
 
     casper.thenOpen('https://sports.betway.com/')
 
@@ -66,7 +66,7 @@ if (config.betway.username) {
 // 3. Betfred
 /////////////////
 
-if (config.betfred.username) {
+if (config.betfred.enabled) {
 
     casper.thenOpen('http://www.betfred.com/', function() {
         this.click('#BetFredContent_ctl01_LoginControls > div:nth-child(1) > a')
@@ -102,7 +102,7 @@ if (config.betfred.username) {
 // 6. William Hill
 /////////////////
 
-if (config.willhill.username) {
+if (config.willhill.enabled) {
 
     casper.thenOpen('http://sports.williamhill.com/bet/en-gb')
 
@@ -122,7 +122,7 @@ if (config.willhill.username) {
 // 6. Skybet
 /////////////////
 
-if (config.skybet.username) {    
+if (config.skybet.enabled) {    
     
     casper.thenOpen('https://www.skybet.com/secure/identity/login/skybet')
 
@@ -142,7 +142,7 @@ if (config.skybet.username) {
 // 7. Ladbrokes
 /////////////////
 
-if (config.ladbrokes.username) {
+if (config.ladbrokes.enabled) {
 
     casper.userAgent(mobileUA)
     casper.thenOpen('https://mobile.ladbrokes.com/lobby/games/balanceViewer?retUrl=https://mobile.ladbrokes.com/lobby/games/')
@@ -151,13 +151,13 @@ if (config.ladbrokes.username) {
         this.click('.btn')
     })
 
-    casper.waitForSelector('#loginusername', function() {
+    casper.waitUntilVisible('#loginusername', function() {
         this.sendKeys('#loginusername', config.ladbrokes.username)
         this.sendKeys('#loginpassword', config.ladbrokes.password)
         this.click('#loginaccount')
     })
 
-    casper.waitForSelector('.col2', function() {
+    casper.waitUntilVisible('.col2', function() {
         data["ladbrokes"] = this.getHTML('.col2').match(regex).map(function(v) { return parseFloat(v); });
         this.echo("ladbrokes: " + data["ladbrokes"])
     })   
@@ -167,7 +167,7 @@ if (config.ladbrokes.username) {
 // 8. Totesport
 /////////////////
 
-if (config.totesport.username) {
+if (config.totesport.enabled) {
 
     casper.userAgent(mobileUA)
     casper.thenOpen('https://totesport.mobi/my-account/')
@@ -203,7 +203,7 @@ if (config.totesport.username) {
 // 9. Betbright
 /////////////////
 
-if (config.betbright.email) {
+if (config.betbright.enabled) {
 
     casper.userAgent(mobileUA)
     casper.thenOpen('https://m.betbright.com/login')
@@ -225,7 +225,7 @@ if (config.betbright.email) {
 // 10. Vernons
 /////////////////
 
-if (config.vernons.username) {
+if (config.vernons.enabled) {
 
     casper.userAgent(desktopUA)
     casper.thenOpen('https://www.vernons.com')
@@ -254,35 +254,23 @@ if (config.vernons.username) {
 // 11. Titanbet
 /////////////////
 
-if (config.titanbet.username) {
+if (config.titanbet.enabled) {
 
-    casper.userAgent(mobileUA)
-    casper.thenOpen('https://m.titanbet.co.uk/en')
+    casper.userAgent(desktopUA)
+    casper.thenOpen('http://sports.titanbet.co.uk/en')
 
-    casper.wait(5000)
-
-    casper.waitForSelector('#mobile-main-area > div.fragment.mobile-header > div.main-content > a.do-login', function() {
-        this.click('#mobile-main-area > div.fragment.mobile-header > div.main-content > a.do-login')
+    casper.waitForSelector('#header-area > div.fragment.login > div.when-logged-out > form > label:nth-child(2) > input[type="text"]', function() {
+        this.sendKeys('#header-area > div.fragment.login > div.when-logged-out > form > label:nth-child(2) > input[type="text"]', config.titanbet.username)
+        this.sendKeys('#header-area > div.fragment.login > div.when-logged-out > form > label:nth-child(3) > input[type="password"]', config.titanbet.password)
+        this.click('#header-area > div.fragment.login > div.when-logged-out > form > input')
     })
 
-    casper.waitUntilVisible('body > div.cms-contents.popup-visible > div.popup-container.visible > div > div > div > form', function() {
-        this.fill('body > div.cms-contents.popup-visible > div.popup-container.visible > div > div > div > form', {
-            'username': config.titanbet.username,
-            'password': config.titanbet.password
-        }, true)
-    })
-
-    casper.waitUntilVisible('body > div.cms-contents.popup-visible > div.popup-container.visible > div > div > form > div.buttons > button:nth-child(5)', function() {
-        this.click('body > div.cms-contents.popup-visible > div.popup-container.visible > div > div > form > div.buttons > button:nth-child(5)')
-    }, function() {
-
-    })
-
-    casper.waitUntilVisible('#mobile-main-area > div.fragment.mobile-header > div.main-content > a.go-account', function() {
-        data["titanbet"] = this.getHTML('#mobile-main-area > div.fragment.mobile-header > div.main-content > a.go-account').match(regex).map(function(v) { return parseFloat(v); });
+    casper.waitForSelectorTextChange('#balance_id > span.expander-button > span.total-balance-value', function() {
+        data["titanbet"] = this.getHTML('#balance_id > span.expander-button > span.total-balance-value').match(regex).map(function(v) { return parseFloat(v); });
         this.echo("titanbet: " + data["titanbet"])
     })
 }
+
 
 /////////////////
 // 12. Unibet
@@ -294,7 +282,7 @@ if (config.titanbet.username) {
 // 13. Coral
 /////////////////
 
-if (config.coral.username) {
+if (config.coral.enabled) {
     casper.userAgent(desktopUA)
     casper.thenOpen('http://sports.coral.co.uk/')
 
@@ -304,7 +292,7 @@ if (config.coral.username) {
         this.click('#top-login-form > div.buttons-wrapper.login-wrapper > button.login-button')
     })
 
-    casper.waitUntilVisible('#balance-text > span.account-balance-value', function() {
+    casper.waitUntilVisible('#balance-text', function() {
         data["coral"] = this.getHTML('#balance-text > span.account-balance-value').match(regex).map(function(v) { return parseFloat(v); });
         this.echo("coral: " + data["coral"])
     }) 
