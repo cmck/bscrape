@@ -53,7 +53,7 @@ if (config.betway.enabled) {
     })
 
     casper.waitForSelector('#balance', function() {
-        data["betway"] = this.getHTML('#balance').match(regex).map(function(v) { return parseFloat(v); });
+        data["betway"] = this.getHTML('#balance').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("betway: " + data["betway"])
     })
 
@@ -81,7 +81,7 @@ if (config.betfred.enabled) {
     })
 
     casper.waitForSelector('#cashBalanceHeader', function() {
-        data["betfred"] = this.getHTML('#cashBalanceHeader').match(regex).map(function(v) { return parseFloat(v); });
+        data["betfred"] = this.getHTML('#cashBalanceHeader').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("betfred: " + data["betfred"])
     })
 }
@@ -113,7 +113,7 @@ if (config.willhill.enabled) {
     })
 
     casper.waitForSelector('#userBalance', function() {
-        data["willhill"] = this.getHTML('#userBalance').match(regex).map(function(v) { return parseFloat(v); });
+        data["willhill"] = this.getHTML('#userBalance').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("william hill: " + data["willhill"])
     })   
 }
@@ -133,7 +133,7 @@ if (config.skybet.enabled) {
     })
 
     casper.waitForSelector('#js-balance', function() {
-        data["skybet"] = this.getHTML('#js-balance').match(regex).map(function(v) { return parseFloat(v); });
+        data["skybet"] = this.getHTML('#js-balance').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("skybet: " + data["skybet"])
     })
 }
@@ -158,7 +158,7 @@ if (config.ladbrokes.enabled) {
     })
 
     casper.waitUntilVisible('.col2', function() {
-        data["ladbrokes"] = this.getHTML('.col2').match(regex).map(function(v) { return parseFloat(v); });
+        data["ladbrokes"] = this.getHTML('.col2').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("ladbrokes: " + data["ladbrokes"])
     })   
 }
@@ -194,7 +194,7 @@ if (config.totesport.enabled) {
     })
 
     casper.waitUntilVisible('.balance', function() {
-        data["totesport"] = this.getHTML('.balance').match(regex).map(function(v) { return parseFloat(v); });
+        data["totesport"] = this.getHTML('.balance').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("totesport: " + data["totesport"])
     })  
 }
@@ -216,7 +216,7 @@ if (config.betbright.enabled) {
     })
 
     casper.waitUntilVisible('#customer_balance', function() {
-        data["betbright"] = this.getHTML('#customer_balance').match(regex).map(function(v) { return parseFloat(v); });
+        data["betbright"] = this.getHTML('#customer_balance').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("betbright: " + data["betbright"])
     }) 
 }
@@ -238,7 +238,7 @@ if (config.vernons.enabled) {
     })
 
     casper.waitUntilVisible('.amount', function() {
-        data["vernons"] = this.getHTML('.amount').match(regex).map(function(v) { return parseFloat(v); });
+        data["vernons"] = this.getHTML('.amount').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("vernons: " + data["vernons"])
     }) 
 }
@@ -266,7 +266,7 @@ if (config.titanbet.enabled) {
     })
 
     casper.waitForSelectorTextChange('#balance_id > span.expander-button > span.total-balance-value', function() {
-        data["titanbet"] = this.getHTML('#balance_id > span.expander-button > span.total-balance-value').match(regex).map(function(v) { return parseFloat(v); });
+        data["titanbet"] = this.getHTML('#balance_id > span.expander-button > span.total-balance-value').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("titanbet: " + data["titanbet"])
     })
 }
@@ -293,7 +293,7 @@ if (config.coral.enabled) {
     })
 
     casper.waitUntilVisible('#balance-text', function() {
-        data["coral"] = this.getHTML('#balance-text > span.account-balance-value').match(regex).map(function(v) { return parseFloat(v); });
+        data["coral"] = this.getHTML('#balance-text > span.account-balance-value').match(regex).map(function(v) { return parseFloat(v); })[0];
         this.echo("coral: " + data["coral"])
     }) 
 }
@@ -302,7 +302,7 @@ if (config.coral.enabled) {
 // Run
 casper.run(function() {
     // Write balances to json file
-    j = JSON.stringify(data)
+    j = JSON.stringify(data, null, 4)
     fs.write('balances.json', j, 'w')
 
     var _this = this;
