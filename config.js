@@ -68,7 +68,7 @@ config.titanbet.enabled  = false
 config.unibet = {};
 config.unibet.username = '';
 config.unibet.password = '';
-config.betway.enabled  = false
+config.unibet.enabled  = false
 
 config.coral = {};
 config.coral.username = '';
