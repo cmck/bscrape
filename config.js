@@ -74,3 +74,13 @@ config.coral = {};
 config.coral.username = '';
 config.coral.password = '';
 config.coral.enabled  = false
+
+config.smarkets = {};
+config.smarkets.email = '';
+config.smarkets.password = '';
+config.smarkets.enabled  = true
+
+config.betfair = {};
+config.betfair.username = '';
+config.betfair.password = '';
+config.betfair.enabled  = true

@@ -1,7 +1,7 @@
 "use strict";
 phantom.casperTest = true;
 
-var config = require('./config-clark.js');
+var config = require('./config.js');
 var fs = require('fs');
 
 var regex = /[+-]?\d+(\.\d+)?/g;
