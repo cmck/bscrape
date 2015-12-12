@@ -10,8 +10,13 @@ var mobileUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKi
 var data = {};
 var balanceSelectors = {};
 
-function parseBalance(html) { 
-    return html.match(regex).map(function(v) { return parseFloat(v); })[0];
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}
+
+function parseBalance(html) {
+    var errorMsg = "Error: Selector not found";
+    return (isEmpty(html) ? errorMsg : html.match(regex).map(function(v) { return parseFloat(v); })[0]);
 }
 
 var casper = require('casper').create({
@@ -23,41 +28,81 @@ var casper = require('casper').create({
     pageSettings: {
         loadImages: false,
         loadPlugins: false,
-        userAgent: desktopUA
+        resourceTimeout: 10000
     }
 });
-casper.start('http://www.google.com');
+casper.start();
 
 
 /////////////////
-// 1. Paddypower
+// 1. Coral
 /////////////////
 
+if (config.coral.enabled) {
 
-/////////////////
+    casper.then(function() {
+        this.userAgent(mobileUA);
+    });
+
+    casper.thenOpen('https://mobile.coral.co.uk/sportsbook/');
+
+    casper.then(function() {
+        this.waitForSelector('.innerTopShadow.c.ml4.button.top.gradBg6', function() {
+            this.click('.innerTopShadow.c.ml4.button.top.gradBg6');
+        });
+    });
+
+    casper.then(function() {
+        this.waitForSelector('#username', function() {
+            this.sendKeys('#username', config.coral.username);
+            this.sendKeys('#password', config.coral.password);
+            this.click('input[value="Sign In"]');
+        });
+    });
+
+    casper.then(function() {
+        balanceSelectors.coral = 'span[data-bind="balance"]';
+        this.waitUntilVisible(balanceSelectors.coral, function() {
+            data.coral = parseBalance(this.getHTML(balanceSelectors.coral));
+            this.echo("coral: " + data.coral);
+        });      
+    });
+}
+
+///////////////
 // 2. Betway
 /////////////////
 
 if (config.betway.enabled) {
 
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
     casper.thenOpen('https://sports.betway.com/');
 
-    casper.waitForSelector('#loginfieldUsername', function() {
-        this.fillSelectors('#loginForm', {
-            'input[name="username"]': config.betway.username,
-            'input[name="password"]': config.betway.password
+    casper.then(function() {
+        this.waitForSelector('#loginfieldUsername', function() {
+            this.fillSelectors('#loginForm', {
+                'input[name="username"]': config.betway.username,
+                'input[name="password"]': config.betway.password
+            });
+            this.click('.loginbutton');
         });
-        this.click('#loginForm > div.loginSubmit > input');
     });
 
-    balanceSelectors.betway = '#balance';
-    casper.waitForSelector(balanceSelectors.betway, function() {
-        data.betway = parseBalance(this.getHTML(balanceSelectors.betway));
-        this.echo("betway: " + data.betway);
+    casper.then(function() {
+        balanceSelectors.betway = '#balance';
+        this.waitForSelector(balanceSelectors.betway, function() {
+            data.betway = parseBalance(this.getHTML(balanceSelectors.betway));
+            this.echo("betway: " + data.betway);
+        });
     });
 
-    casper.waitForSelector('#login > div.user_box > div:nth-child(1) > div.right > span', function() {
-        this.click('#login > div.user_box > div:nth-child(1) > div.right > span');
+    casper.then(function() {
+        this.waitForSelector('.user_box_txt.logoutbutton', function() {
+            this.click('.user_box_txt.logoutbutton');
+        });
     });
 }
 
@@ -67,23 +112,33 @@ if (config.betway.enabled) {
 
 if (config.betfred.enabled) {
 
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
     casper.thenOpen('http://www.betfred.com/', function() {
-        this.click('#BetFredContent_ctl01_LoginControls > div:nth-child(1) > a');
+        this.click('.login');
     });
 
-    casper.waitForSelector('#SignIn', function() {
-        this.fillSelectors('#SignIn', {
-            'input[name="LoginUserName"]': config.betfred.username,
-            'input[name="LoginPassword"]': config.betfred.password
+    casper.then(function() {
+        this.waitForSelector('#SignIn', function() {
+            this.fillSelectors('#SignIn', {
+                'input[name="LoginUserName"]': config.betfred.username,
+                'input[name="LoginPassword"]': config.betfred.password
+            });
+            this.click('#login-button');
+        });   
+    });
+
+    casper.then(function() {
+        balanceSelectors.betfred = '#cashBalanceHeader';
+        this.waitForSelector(balanceSelectors.betfred, function() {
+            data.betfred = parseBalance(this.getHTML(balanceSelectors.betfred));
+            this.echo("betfred: " + data.betfred);
         });
-        this.click('#login-button');
     });
 
-    balanceSelectors.betfred = '#cashBalanceHeader';
-    casper.waitForSelector(balanceSelectors.betfred, function() {
-        data.betfred = parseBalance(this.getHTML(balanceSelectors.betfred));
-        this.echo("betfred: " + data.betfred);
-    });
+    casper.thenOpen('http://www.betfred.com/logout.aspx');
 }
 
 /////////////////
@@ -95,6 +150,37 @@ if (config.betfred.enabled) {
 // 5. Betvictor
 /////////////////
 
+if (config.betvictor.enabled) { 
+
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
+    casper.thenOpen('http://www.betvictor.com/sports/en');
+
+    // Assume Angular DOM fully loaded after this selector is visible
+    casper.then(function() {
+        this.waitUntilVisible('#chat_link');
+    });
+
+    casper.then(function() {
+        this.waitUntilVisible('label[class="username"]', function() {
+            this.sendKeys('#username', config.betvictor.username);
+            this.sendKeys('#password', config.betvictor.password);
+            this.click('#login_bar > div.login_form > form > button');
+        });
+    });
+
+    casper.then(function() {
+        balanceSelectors.betvictor = '#account_balance_amount > span.details';
+        this.waitUntilVisible(balanceSelectors.betvictor, function() {
+            data.betvictor = parseBalance(this.getHTML(balanceSelectors.betvictor));
+            this.echo("betvictor: " + data.betvictor);
+        });
+    });
+
+    casper.thenOpen('http://www.betvictor.com/sports/en/logout');
+}
 
 /////////////////
 // 6. William Hill
@@ -102,19 +188,33 @@ if (config.betfred.enabled) {
 
 if (config.willhill.enabled) {
 
-    casper.thenOpen('http://sports.williamhill.com/bet/en-gb');
-
-    casper.waitForSelector('#login', function() {
-        this.sendKeys('#username', config.willhill.username);
-        this.sendKeys('#password', config.willhill.password);
-        this.click('#signInBtn');
+    casper.then(function() {
+        this.userAgent(desktopUA);
     });
 
-    balanceSelectors.willhill = '#userBalance';
-    casper.waitForSelector(balanceSelectors.willhill, function() {
-        data.willhill = parseBalance(this.getHTML(balanceSelectors.willhill));
-        this.echo("william hill: " + data.willhill);
-    });   
+    casper.thenOpen('https://sports.williamhill.com/bet/en-gb?action=GoAcct');
+
+    casper.then(function() {
+        this.waitUntilVisible('#login_username', function() {
+            this.sendKeys('#login_username', config.willhill.username, {reset: true});
+            this.sendKeys('#login_password', config.willhill.password, {reset: true});
+            this.click('#submit_button');
+        });
+    });
+
+    casper.then(function() {
+        balanceSelectors.willhill = '#userBalance';
+        this.waitForSelector(balanceSelectors.willhill, function() {
+            data.willhill = parseBalance(this.getHTML(balanceSelectors.willhill));
+            this.echo("william hill: " + data.willhill);
+        }); 
+    });
+      
+    casper.then(function() {
+        this.waitForSelector('a[class="signOutLink linkable"]', function() {
+            this.click('a[class="signOutLink linkable"]');
+        });
+    });
 }
 
 /////////////////
@@ -123,19 +223,29 @@ if (config.willhill.enabled) {
 
 if (config.skybet.enabled) {    
     
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
     casper.thenOpen('https://www.skybet.com/secure/identity/login/skybet');
 
-    casper.waitForSelector('#txt-login-uid-login-sso', function() {
-        this.sendKeys('#txt-login-uid-login-sso', config.skybet.username);
-        this.sendKeys('#txt-login-pin-login-sso', config.skybet.pin);
-        this.click('#btn-login-submit-login-sso');
+    casper.then(function() {
+        this.waitForSelector('#txt-login-uid-login-sso', function() {
+            this.sendKeys('#txt-login-uid-login-sso', config.skybet.username);
+            this.sendKeys('#txt-login-pin-login-sso', config.skybet.pin);
+            this.click('#btn-login-submit-login-sso');
+        });
     });
 
-    balanceSelectors.skybet = '#js-balance';
-    casper.waitForSelector(balanceSelectors.skybet, function() {
-        data.skybet = parseBalance(this.getHTML(balanceSelectors.skybet));
-        this.echo("skybet: " + data.skybet);
+    casper.then(function() {
+        balanceSelectors.skybet = '#js-balance';
+        this.waitForSelector(balanceSelectors.skybet, function() {
+            data.skybet = parseBalance(this.getHTML(balanceSelectors.skybet));
+            this.echo("skybet: " + data.skybet);
+        });
     });
+
+    casper.thenOpen('https://www.skybet.com/secure/identity/logout');
 }
 
 /////////////////
@@ -144,24 +254,33 @@ if (config.skybet.enabled) {
 
 if (config.ladbrokes.enabled) {
 
-    casper.userAgent(mobileUA);
-    casper.thenOpen('https://mobile.ladbrokes.com/lobby/games/balanceViewer?retUrl=https://mobile.ladbrokes.com/lobby/games/');
-
-    casper.waitForSelector('.btn', function() {
-        this.click('.btn');
+    casper.then(function() {
+        this.userAgent(mobileUA);
     });
 
-    casper.waitUntilVisible('#loginusername', function() {
-        this.sendKeys('#loginusername', config.ladbrokes.username);
-        this.sendKeys('#loginpassword', config.ladbrokes.password);
-        this.click('#loginaccount');
+    casper.thenOpen('https://m.ladbrokes.com/en-gb/#!login?redirectTarget=%3Ftab%3Dfeatured');
+
+    casper.then(function() {
+        this.waitForSelector('#login-submit-button', function() {
+            this.sendKeys('#login_username', config.ladbrokes.username);
+            this.sendKeys('#login_password', config.ladbrokes.password);
+            this.click('#login-submit-button');
+        });
     });
 
-    balanceSelectors.ladbrokes = '.col2';
-    casper.waitUntilVisible(balanceSelectors.ladbrokes , function() {
-        data.ladbrokes = parseBalance(this.getHTML(balanceSelectors.ladbrokes));
-        this.echo("ladbrokes: " + data.ladbrokes);
-    });   
+    casper.then(function() {
+        this.waitUntilVisible('#balance > div.balance', function() {
+            this.open('https://m.ladbrokes.com/user');    
+        });
+    });
+
+    casper.then(function() {
+        var json_string = JSON.parse(this.getPageContent());
+        data.ladbrokes = json_string.balance;
+        this.echo("ladbrokes: " + data.ladbrokes); 
+    });
+
+    casper.thenOpen('https://m.ladbrokes.com/en-gb/#!/en-gb/logout');
 }
 
 /////////////////
@@ -170,36 +289,46 @@ if (config.ladbrokes.enabled) {
 
 if (config.totesport.enabled) {
 
-    casper.userAgent(mobileUA);
+    casper.then(function() {
+        this.userAgent(mobileUA);
+    });
+
     casper.thenOpen('https://totesport.mobi/my-account/');
 
-    casper.wait(5000);
-
-    casper.waitUntilVisible('.help-overlay__ok-button', function() {
-        if (this.exists('.help-overlay')) {
-            this.evaluate(function() {
-                // $('.help-overlay').remove();
-                document.getElementById("element-id").outerHTML='';
-            });
-        }
+    casper.then(function() {
+        this.waitUntilVisible('.help-overlay__ok-button', function() {
+            if (this.exists('.help-overlay')) {
+                this.evaluate(function() {
+                    document.getElementById("element-id").outerHTML='';
+                });
+            }
+        }); // TODO: use casper.thenBypassIf()
     });
 
-    casper.waitUntilVisible('.logon__input--username', function() {
-        casper.fillSelectors('body > div.page.page--loaded > div > div > div > div > div.my-account__content > div > form', {
-            'input[name="LogonUsername"]': config.totesport.username,
-            'input[name="LogonPassword"]': config.totesport.password
-        }, true); 
+    casper.then(function() {
+        this.waitUntilVisible('.logon__input--username', function() {
+            this.fillSelectors('.form.logon__form', {
+                'input[name="LogonUsername"]': config.totesport.username,
+                'input[name="LogonPassword"]': config.totesport.password
+            }, true); 
+        });
     });
 
-    casper.waitUntilVisible('.userDetails', function() {
-        this.click('.icon__image--large');
+    casper.then(function() {
+        this.waitUntilVisible('.userDetails', function() {
+            this.click('.icon__image--large');
+        });  
     });
 
-    balanceSelectors.totesport = '.balance';
-    casper.waitUntilVisible(balanceSelectors.totesport, function() {
-        data.totesport = parseBalance(this.getHTML(balanceSelectors.totesport));
-        this.echo("totesport: " + data.totesport);
-    });  
+    casper.then(function() {
+        balanceSelectors.totesport = '.balance';
+        this.waitUntilVisible(balanceSelectors.totesport, function() {
+            data.totesport = parseBalance(this.getHTML(balanceSelectors.totesport));
+            this.echo("totesport: " + data.totesport);
+        });    
+    });
+     
+    casper.thenOpen('https://totesport.mobi/logout');
 }
 
 /////////////////
@@ -208,21 +337,30 @@ if (config.totesport.enabled) {
 
 if (config.betbright.enabled) {
 
-    casper.userAgent(mobileUA);
-    casper.thenOpen('https://m.betbright.com/login');
-
-    casper.waitUntilVisible('#login-form', function() {
-        casper.fillSelectors('#login-form', {
-            'input[name="username"]': config.betbright.email,
-            'input[name="password"]': config.betbright.password
-        }, true);
+    casper.then(function() {
+        this.userAgent(mobileUA);
     });
 
-    balanceSelectors.betbright = '#customer_balance';
-    casper.waitUntilVisible(balanceSelectors.betbright, function() {
-        data.betbright = parseBalance(this.getHTML(balanceSelectors.betbright));
-        this.echo("betbright: " + data.betbright);
-    }); 
+    casper.thenOpen('https://m.betbright.com/login');
+
+    casper.then(function() {
+        this.waitUntilVisible('#login-form', function() {
+            this.fillSelectors('#login-form', {
+                'input[name="username"]': config.betbright.email,
+                'input[name="password"]': config.betbright.password
+            }, true);
+        });
+    })
+
+    casper.then(function() {
+        balanceSelectors.betbright = '#customer_balance';
+        this.waitUntilVisible(balanceSelectors.betbright, function() {
+            data.betbright = parseBalance(this.getHTML(balanceSelectors.betbright));
+            this.echo("betbright: " + data.betbright);
+        });
+    });
+
+    casper.thenOpen('https://m.betbright.com/logout');
 }
 
 /////////////////
@@ -231,27 +369,60 @@ if (config.betbright.enabled) {
 
 if (config.vernons.enabled) {
 
-    casper.userAgent(desktopUA);
-    casper.thenOpen('https://www.vernons.com');
-
-    casper.waitUntilVisible('#forms-playtech-login-form', function() {
-        casper.fillSelectors('#forms-playtech-login-form', {
-            'input[name="username"]': config.vernons.username,
-            'input[name="password"]': config.vernons.password
-        }, true);
+    casper.then(function() {
+        this.userAgent(desktopUA);
     });
 
-    balanceSelectors.vernons = '.amount';
-    casper.waitUntilVisible(balanceSelectors.vernons, function() {
-        data.vernons = parseBalance(this.getHTML(balanceSelectors.vernons));
-        this.echo("vernons: " + data.vernons);
-    }); 
+    casper.thenOpen('https://www.vernons.com');
+
+    casper.then(function() {
+        this.waitUntilVisible('#forms-playtech-login-form', function() {
+            this.fillSelectors('#forms-playtech-login-form', {
+                'input[name="username"]': config.vernons.username,
+                'input[name="password"]': config.vernons.password
+            }, true);
+        });
+    })
+
+    casper.then(function() {
+        balanceSelectors.vernons = '.amount';
+        this.waitUntilVisible(balanceSelectors.vernons, function() {
+            data.vernons = parseBalance(this.getHTML(balanceSelectors.vernons));
+            this.echo("vernons: " + data.vernons);
+        }); 
+    });
+
+    casper.thenOpen('https://www.vernons.com/logout');
 }
 
 /////////////////
 // 11. 32Red
 /////////////////
 
+if (config.thirtytworedsport.enabled) {
+
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
+    casper.thenOpen('https://www.32redsport.com/');
+
+    casper.then(function() {
+        this.waitUntilVisible('#LoginUsername', function() {
+            this.fillSelectors('#login-form', {
+                'input[name="Login[username]"]': config.thirtytworedsport.username,
+                'input[name="Login[password]"]': config.thirtytworedsport.password
+            }, true);
+        });
+    });
+
+    casper.thenOpen('https://www.32redsport.com/ajax/balance2.php', function() {
+        data.thirtytworedsport = parseBalance(this.getHTML());
+        this.echo("32 red sport: " + data.thirtytworedsport);
+    });
+
+    casper.thenOpen('https://www.32redsport.com/logout.html');
+}
 
 /////////////////
 // 11. Titanbet
@@ -259,51 +430,38 @@ if (config.vernons.enabled) {
 
 if (config.titanbet.enabled) {
 
-    casper.userAgent(desktopUA);
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
     casper.thenOpen('http://sports.titanbet.co.uk/en');
 
-    casper.waitForSelector('#header-area > div.fragment.login > div.when-logged-out > form > label:nth-child(2) > input[type="text"]', function() {
-        this.sendKeys('#header-area > div.fragment.login > div.when-logged-out > form > label:nth-child(2) > input[type="text"]', config.titanbet.username);
-        this.sendKeys('#header-area > div.fragment.login > div.when-logged-out > form > label:nth-child(3) > input[type="password"]', config.titanbet.password);
-        this.click('#header-area > div.fragment.login > div.when-logged-out > form > input');
-    });
-
-    balanceSelectors.titanbet = '#balance_id > span.expander-button > span.total-balance-value';
-    casper.waitForSelectorTextChange(balanceSelectors.titanbet, function() {
-        data.titanbet = parseBalance(this.getHTML(balanceSelectors.titanbet));
-        this.echo("titanbet: " + data.titanbet);
-    });
-}
-
-
-/////////////////
-// 12. Unibet
-/////////////////
-
-// TODO
-
-/////////////////
-// 13. Coral
-/////////////////
-
-if (config.coral.enabled) {
-    casper.userAgent(desktopUA);
-    casper.thenOpen('http://sports.coral.co.uk/');
-
-    casper.waitForSelector('#top-login-form', function() {
-        casper.fillSelectors('#top-login-form', {
-            'input[name="login"]': config.coral.username,
-            'input[name="password"]': config.coral.password
+    casper.then(function() {
+        this.waitForSelector('input[name="username"]', function() {
+            this.sendKeys('input[name="username"]', config.titanbet.username);
+            this.sendKeys('input[name="password"]', config.titanbet.password);
+            this.click('input[value="Log in"]');
         });
-        this.click('#top-login-form > div.buttons-wrapper.login-wrapper > button.login-button');
-    })
+    });
 
-    balanceSelectors.coral = '#balance-text > span.account-balance-value';
-    casper.waitUntilVisible(balanceSelectors.coral, function() {
-        data.coral = parseBalance(this.getHTML(balanceSelectors.coral));
-        this.echo("coral: " + data.coral);
-    }); 
+    casper.then(function() {
+        balanceSelectors.titanbet = '.total-balance-value';
+        this.waitForSelectorTextChange(balanceSelectors.titanbet, function() {
+            data.titanbet = parseBalance(this.getHTML(balanceSelectors.titanbet));
+            this.echo("titanbet: " + data.titanbet);
+        });
+    });
+
+    casper.then(function() {
+        this.waitForSelector('button[title="Logout"]', function() {
+           this.click('button[title="Logout"]'); 
+        });
+    });
 }
+
+///////////////
+// 12. Unibet
+///////////////
 
 
 /////////////////
@@ -311,48 +469,72 @@ if (config.coral.enabled) {
 /////////////////
 
 if (config.smarkets.enabled) { 
-    casper.userAgent(desktopUA);
+
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
     casper.thenOpen('https://m.smarkets.com/members/login');
 
-    casper.waitForSelector('#login', function() {
-        this.fill('#login', {
-            'email': config.smarkets.email,
-            'password': config.smarkets.password
-        }, true);
-    });
+    casper.then(function() {
+        this.waitForSelector('#login', function() {
+            this.fill('#login', {
+                'email': config.smarkets.email,
+                'password': config.smarkets.password
+            }, true);
+        });    
+    })
 
-    balanceSelectors.smarkets = '#notice';
-    casper.waitForSelectorTextChange(balanceSelectors.smarkets, function() {
-        data.smarkets = parseBalance(this.getHTML(balanceSelectors.smarkets));
-        this.echo("smarkets: " + data.smarkets);
-    });
+    casper.then(function() {
+        balanceSelectors.smarkets = '.balance';
+        this.waitForSelector(balanceSelectors.smarkets, function() {
+            data.smarkets = parseBalance(this.getHTML(balanceSelectors.smarkets));
+            this.echo("smarkets: " + data.smarkets);
+        });
+    })
+
+    casper.thenOpen('https://m.smarkets.com/members/logout')
 }
 
-
 /////////////////
-// 13. Betfair
+// 14. Betfair
 /////////////////
 
 if (config.betfair.enabled) {
-    casper.userAgent(desktopUA);
-    casper.thenOpen('https://www.betfair.com/exchange');
 
-    casper.waitForSelector('form.ssc-lif', function() {
-        this.fill('form.ssc-lif', {
-            'username': config.betfair.username,
-            'password': config.betfair.password
-        }, true);
+    casper.then(function() {
+        this.userAgent(desktopUA);
     });
 
-    balanceSelectors.betfair = '.ssc-wla';
-    casper.waitUntilVisible(balanceSelectors.betfair, function() {
-        data.betfair = parseBalance(this.getHTML(balanceSelectors.betfair));
-        this.echo("betfair: " + data.betfair);
+    casper.thenOpen('https://myaccount.betfair.com/summary/accountsummary');
+
+    casper.then(function() {
+        this.waitForSelector('form.ssc-lif', function() {
+            this.fill('form.ssc-lif', {
+                'username': config.betfair.username,
+                'password': config.betfair.password
+            }, true);
+        });  
+    })
+
+    casper.then(function() {
+        balanceSelectors.betfair = '.amount.r-availableToBet';
+        this.waitForSelector(balanceSelectors.betfair, function() {
+            data.betfair = parseBalance(this.getHTML(balanceSelectors.betfair));
+            this.echo("betfair: " + data.betfair);
+        });
+    });
+
+    casper.then(function() {
+        this.waitUntilVisible('.ssc-un', function() {
+            this.click('.ssc-un');
+        });
+        this.waitUntilVisible('#ssc-lis', function() {
+            this.click('#ssc-lis');
+        });
     });
 }
 
-
-// Run
 casper.run(function() {
     // Write balances to json file
     var j = JSON.stringify(data, null, 4);

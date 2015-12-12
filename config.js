@@ -78,9 +78,9 @@ config.coral.enabled  = false
 config.smarkets = {};
 config.smarkets.email = '';
 config.smarkets.password = '';
-config.smarkets.enabled  = true
+config.smarkets.enabled  = false
 
 config.betfair = {};
 config.betfair.username = '';
 config.betfair.password = '';
-config.betfair.enabled  = true
+config.betfair.enabled  = false
