@@ -463,6 +463,36 @@ if (config.titanbet.enabled) {
 // 12. Unibet
 ///////////////
 
+if (config.unibet.enabled) {
+
+    casper.then(function() {
+        this.userAgent(mobileUA);
+    });
+
+    casper.thenOpen('https://www.unibet.co.uk', function() {
+        this.waitUntilVisible('a[href="#openAccountMenu"]', function() {
+            this.click('a[href="#openAccountMenu"]');
+        });
+    });
+
+    casper.then(function() {
+        this.waitUntilVisible('input[name="username"]', function() {
+            this.sendKeys('input[name="username"]', config.unibet.username);
+            this.sendKeys('input[name="password"]', config.unibet.password);
+            this.click('button[name="button-login"]');
+        });
+    });
+
+    casper.then(function() {
+        balanceSelectors.unibet = '.total.total-amount';
+        this.waitUntilVisible(balanceSelectors.unibet, function() {
+            data.unibet = parseBalance(this.getHTML(balanceSelectors.unibet));
+            this.echo("unibet: " + data.unibet);
+        });
+    });
+
+    casper.thenOpen('https://www.unibet.co.uk/logout');
+}
 
 /////////////////
 // 13. Smarkets
@@ -482,8 +512,8 @@ if (config.smarkets.enabled) {
                 'email': config.smarkets.email,
                 'password': config.smarkets.password
             }, true);
-        });    
-    })
+        });
+    });
 
     casper.then(function() {
         balanceSelectors.smarkets = '.balance';
@@ -491,9 +521,9 @@ if (config.smarkets.enabled) {
             data.smarkets = parseBalance(this.getHTML(balanceSelectors.smarkets));
             this.echo("smarkets: " + data.smarkets);
         });
-    })
+    });
 
-    casper.thenOpen('https://m.smarkets.com/members/logout')
+    casper.thenOpen('https://m.smarkets.com/members/logout');
 }
 
 /////////////////
