@@ -35,7 +35,7 @@ casper.start();
 
 
 /////////////////
-// 1. Coral
+// Coral
 /////////////////
 
 if (config.coral.enabled) {
@@ -69,8 +69,48 @@ if (config.coral.enabled) {
     });
 }
 
+/////////////////
+// Paddy
+/////////////////
+
+if (config.betfair.enabled) {
+
+    casper.then(function() {
+        this.userAgent(mobileUA);
+    });
+
+    casper.thenOpen('https://iphone.paddypower.mobi/#!/')
+
+    casper.then(function() {
+        this.capture('p.png');
+    });
+
+    casper.then(function() {
+        this.waitUntilVisible('#toolbar-login-button', function() {
+            this.click('#toolbar-login-button');
+        });
+    });
+
+    casper.then(function() {
+        this.waitUntilVisible('#userName', function() {
+            this.sendKeys('#userName', config.paddypower.username);
+            this.sendKeys('#password', config.paddypower.password);
+            this.click('#Login');
+        });
+    });
+
+    casper.then(function() {
+        balanceSelectors.paddypower = '.cl.b.ml5';
+        this.waitForSelector(balanceSelectors.paddypower, function() {
+            data.paddypower = parseBalance(this.getHTML(balanceSelectors.paddypower));
+            this.echo("paddypower: " + data.paddypower);
+        });
+    });
+
+}
+
 ///////////////
-// 2. Betway
+// Betway
 /////////////////
 
 if (config.betway.enabled) {
@@ -107,7 +147,7 @@ if (config.betway.enabled) {
 }
 
 /////////////////
-// 3. Betfred
+// Betfred
 /////////////////
 
 if (config.betfred.enabled) {
@@ -142,12 +182,12 @@ if (config.betfred.enabled) {
 }
 
 /////////////////
-// 4. Stan James
+// Stan James
 /////////////////
 
 
 /////////////////
-// 5. Betvictor
+// Betvictor
 /////////////////
 
 if (config.betvictor.enabled) { 
@@ -183,7 +223,7 @@ if (config.betvictor.enabled) {
 }
 
 /////////////////
-// 6. William Hill
+// William Hill
 /////////////////
 
 if (config.willhill.enabled) {
@@ -218,7 +258,7 @@ if (config.willhill.enabled) {
 }
 
 /////////////////
-// 6. Skybet
+// Skybet
 /////////////////
 
 if (config.skybet.enabled) {    
@@ -249,7 +289,7 @@ if (config.skybet.enabled) {
 }
 
 /////////////////
-// 7. Ladbrokes
+// Ladbrokes
 /////////////////
 
 if (config.ladbrokes.enabled) {
@@ -284,7 +324,7 @@ if (config.ladbrokes.enabled) {
 }
 
 /////////////////
-// 8. Totesport
+// Totesport
 /////////////////
 
 if (config.totesport.enabled) {
@@ -332,7 +372,7 @@ if (config.totesport.enabled) {
 }
 
 /////////////////
-// 9. Betbright
+// Betbright
 /////////////////
 
 if (config.betbright.enabled) {
@@ -364,7 +404,7 @@ if (config.betbright.enabled) {
 }
 
 /////////////////
-// 10. Vernons
+// Vernons
 /////////////////
 
 if (config.vernons.enabled) {
@@ -396,7 +436,7 @@ if (config.vernons.enabled) {
 }
 
 /////////////////
-// 11. 32Red
+// 32Red
 /////////////////
 
 if (config.thirtytworedsport.enabled) {
@@ -425,7 +465,7 @@ if (config.thirtytworedsport.enabled) {
 }
 
 /////////////////
-// 11. Titanbet
+// Titanbet
 /////////////////
 
 if (config.titanbet.enabled) {
@@ -460,7 +500,7 @@ if (config.titanbet.enabled) {
 }
 
 ///////////////
-// 12. Unibet
+// Unibet
 ///////////////
 
 if (config.unibet.enabled) {
@@ -495,7 +535,7 @@ if (config.unibet.enabled) {
 }
 
 /////////////////
-// 13. Smarkets
+// Smarkets
 /////////////////
 
 if (config.smarkets.enabled) { 
@@ -527,7 +567,7 @@ if (config.smarkets.enabled) {
 }
 
 /////////////////
-// 14. Betfair
+// Betfair
 /////////////////
 
 if (config.betfair.enabled) {
