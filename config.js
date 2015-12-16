@@ -1,5 +1,5 @@
 var config = module.exports = {};
- 
+
 config.paddypower = {};
 config.paddypower.username = '';
 config.paddypower.password = '';
@@ -84,3 +84,8 @@ config.betfair = {};
 config.betfair.username = '';
 config.betfair.password = '';
 config.betfair.enabled  = false
+
+config.skrill = {};
+config.skrill.email = '';
+config.skrill.password = '';
+config.skrill.enabled  = false

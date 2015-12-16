@@ -16,7 +16,7 @@ function isEmpty(str) {
 
 function parseBalance(html) {
     var errorMsg = "Error: Selector not found";
-    return (isEmpty(html) ? errorMsg : html.match(regex).map(function(v) { return parseFloat(v); })[0]);
+    return (!html ? errorMsg : html.match(regex).map(function(v) { return parseFloat(v); })[0]);
 }
 
 var casper = require('casper').create({
@@ -79,11 +79,7 @@ if (config.betfair.enabled) {
         this.userAgent(mobileUA);
     });
 
-    casper.thenOpen('https://iphone.paddypower.mobi/#!/')
-
-    casper.then(function() {
-        this.capture('p.png');
-    });
+    casper.thenOpen('https://iphone.paddypower.mobi/#!/');
 
     casper.then(function() {
         this.waitUntilVisible('#toolbar-login-button', function() {
@@ -107,6 +103,16 @@ if (config.betfair.enabled) {
         });
     });
 
+    casper.then(function() {
+        this.waitUntilVisible('#alert3-close-upper-right', function() {
+            this.click('#alert3-close-upper-right');
+            this.click('#topbar-container-buttons-left-burger');
+        });
+
+        this.waitUntilVisible('.ml10.cl.c21.mt9', function() {
+            this.click('.ml10.cl.c21.mt9');
+        });
+    });
 }
 
 ///////////////
@@ -309,7 +315,7 @@ if (config.ladbrokes.enabled) {
     });
 
     casper.then(function() {
-        this.waitUntilVisible('#balance > div.balance', function() {
+        this.waitUntilVisible('#headerBalance', function() {
             this.open('https://m.ladbrokes.com/user');    
         });
     });
@@ -589,7 +595,7 @@ if (config.betfair.enabled) {
 
     casper.then(function() {
         balanceSelectors.betfair = '.amount.r-availableToBet';
-        this.waitForSelector(balanceSelectors.betfair, function() {
+        this.waitUntilVisible(balanceSelectors.betfair, function() {
             data.betfair = parseBalance(this.getHTML(balanceSelectors.betfair));
             this.echo("betfair: " + data.betfair);
         });
@@ -604,6 +610,38 @@ if (config.betfair.enabled) {
         });
     });
 }
+
+/////////////////
+// Skrill
+/////////////////
+
+if (config.skrill.enabled) {
+
+    casper.then(function() {
+        this.userAgent(desktopUA);
+    });
+
+    casper.thenOpen('https://account.skrill.com/login');
+
+    casper.then(function() {
+        this.waitUntilVisible('#user_authentication_email', function() {
+            this.sendKeys('#user_authentication_email', config.skrill.email);
+            this.sendKeys('#user_authentication_password', config.skrill.password);
+            this.click('input[value="Login"]');
+        });
+    });
+
+    casper.then(function() {
+        balanceSelectors.skrill = '.balance';
+        this.waitUntilVisible(balanceSelectors.skrill, function() {
+            data.skrill = parseBalance(this.getHTML(balanceSelectors.skrill));
+            this.echo("skrill: " + data.skrill);
+        });
+    });
+
+    casper.thenOpen('https://account.skrill.com/logout');
+}
+
 
 casper.run(function() {
     // Write balances to json file
