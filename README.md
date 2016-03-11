@@ -7,6 +7,7 @@ a quick overview of your money.
 
 ### Prerequisites
 
+Mac OS X. All the installation instructions are for OS X at the moment.
 [homebrew](http://brew.sh/)
 
 ### Supported bookmakers
@@ -31,7 +32,7 @@ Please feel free to contribute. This codebase is still under development and req
 
 ### Installation
 
-This must be run from the Terminal. It has only been tested on OS X.
+This must be run from the [Terminal](http://www.macworld.co.uk/feature/mac-software/get-more-out-of-os-x-terminal-3608274/). It has only been tested on OS X.
 
 1. brew install casperjs --devel
 2. Set your usernames and passwords in config.js
