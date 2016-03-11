@@ -9,6 +9,26 @@ a quick overview of your money.
 
 [homebrew](http://brew.sh/)
 
+### Supported bookmakers
+* Coral
+* PaddyPower
+* Betway
+* Betfred
+* Betvictor
+* William Hill
+* Skybet
+* Ladbrokes
+* Totesport
+* Betbright
+* Vernons
+* 32Red
+* Titanbet
+* Unibet
+* Smarkets
+* Betfair
+
+Please feel free to contribute
+
 ### Installation
 
 1. brew install casperjs --devel
