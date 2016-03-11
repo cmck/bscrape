@@ -31,6 +31,8 @@ Please feel free to contribute. This codebase is still under development and req
 
 ### Installation
 
+This must be run from the Terminal. It has only been tested on OS X.
+
 1. brew install casperjs --devel
 2. Set your usernames and passwords in config.js
 
@@ -40,4 +42,4 @@ Please feel free to contribute. This codebase is still under development and req
 casperjs bscrape.js --ignore-ssl-errors=true --ssl-protocol=any
 ```
 
-Will output balances to stdout and to ./balances.json
+Balances will be shown in the terminal and output to the file: balances.json
