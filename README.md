@@ -27,7 +27,7 @@ a quick overview of your money.
 * Smarkets
 * Betfair
 
-Please feel free to contribute
+Please feel free to contribute. This codebase is still under development and requires continual maintenance. If you encounter a problem it is likely that the underlying website has changed. Please create an new issue or provide a pull request.
 
 ### Installation
 
